@@ -1,0 +1,41 @@
+run:
+  name: simple-helloworld-after
+  seed: 42
+  output_dir: artifacts/simple-helloworld-after
+
+model:
+  factory: models.simple_helloworld.new.factory:build_model
+  input_size: 10
+  hidden_size: 10
+  output_size: 5
+
+data:
+  factory: models.simple_helloworld.new.factory:build_datasets
+  num_examples: 128
+  validation_fraction: 0.2
+  input_size: 10
+  output_size: 5
+  shuffle_train: true
+  shuffle_validation: false
+  drop_last: false
+
+trainer:
+  max_epochs: 2
+  train_batch_size: 16
+  eval_batch_size: 16
+  gradient_accumulation_steps: 1
+  optimizer:
+    name: sgd
+    parameters: {lr: 0.001, momentum: 0.0, weight_decay: 0.0}
+  scheduler: {name: constant, warmup_steps: 0}
+  max_grad_norm: 100.0
+  precision: fp32
+  compile: false
+  num_workers: 0
+  log_every_steps: 1
+  telemetry: {enabled: true, log_every_steps: 1}
+  save_every_epochs: 1
+  resume_from: null
+  early_stopping: {metric: val_loss, mode: min, patience: 3, min_delta: 0.0}
+  safety: {stop_on_non_finite_loss: true, max_loss: 100.0, max_consecutive_skips: 1}
+  model_parallelism: {name: none, tensor_parallel_size: 1, pipeline_parallel_size: 1, data_parallel_size: auto}

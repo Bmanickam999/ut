@@ -1,0 +1,60 @@
+run: {name: smoke, seed: 7, output_dir: artifacts/smoke}
+model:
+  factory: models.housing_llm.factory:build_model
+  vocab_size: 2048
+  max_seq_len: 64
+  d_model: 64
+  n_layers: 2
+  n_heads: 4
+  d_ff: 128
+  dropout: 0.0
+  target_mean: 300000.0
+  target_scale: 200000.0
+data:
+  factory: models.housing_llm.factory:build_datasets
+  source: {type: synthetic, path: null, cache_dir: .cache/public-data}
+  num_examples: 64
+  validation_fraction: 0.2
+  feature_fields: [state, county, bedrooms, bathrooms, living_area_sqft, median_income, population, year_built]
+  target_field: home_value
+  tokenizer: {vocab_size: 2048, max_length: 64}
+trainer:
+  environment:
+    override_existing: false
+    variables:
+      NCCL_DEBUG: INFO
+      NCCL_DEBUG_SUBSYS: INIT,COLL
+      TORCH_DISTRIBUTED_DEBUG: INFO
+      TORCH_NCCL_ASYNC_ERROR_HANDLING: "1"
+      TORCH_SHOW_CPP_STACKTRACES: "1"
+  model_parallelism:
+    name: none
+    tensor_parallel_size: 1
+    pipeline_parallel_size: 1
+    data_parallel_size: auto
+  max_epochs: 1
+  train_batch_size: 8
+  eval_batch_size: 8
+  gradient_accumulation_steps: 1
+  learning_rate: 0.001
+  weight_decay: 0.01
+  optimizer:
+    name: adamw
+    parameters: {lr: 0.001, weight_decay: 0.01, betas: [0.9, 0.999], eps: 1.0e-8}
+  warmup_steps: 0
+  max_grad_norm: 1.0
+  precision: fp32
+  compile: false
+  num_workers: 0
+  log_every_steps: 1
+  telemetry: {enabled: true, log_every_steps: 1}
+  diagnostics:
+    enabled: false
+    log_every_batches: 1
+    collective_timeout_seconds: 120
+    fail_fast_capacity_check: false
+    capacity: {bytes_per_parameter: 20.0, activation_reserve_gib: 0.1, max_memory_fraction: 0.9, require_memory_check: true}
+  save_every_epochs: 1
+  resume_from: null
+  early_stopping: {metric: val_loss, mode: min, patience: 3, min_delta: 0.0}
+  safety: {stop_on_non_finite_loss: true, max_loss: 100.0, max_consecutive_skips: 1}

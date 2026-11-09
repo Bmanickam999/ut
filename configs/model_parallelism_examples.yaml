@@ -1,0 +1,43 @@
+# Reference snippets; copy one model_parallelism mapping into a runnable config.
+# This file is documentation and is not itself a complete training config.
+
+ddp_only:
+  name: none
+  tensor_parallel_size: 1
+  pipeline_parallel_size: 1
+  data_parallel_size: auto
+
+fsdp:
+  name: fsdp
+  tensor_parallel_size: 1
+  pipeline_parallel_size: 1
+  data_parallel_size: auto
+  parameters:
+    sharding_strategy: FULL_SHARD  # FULL_SHARD, SHARD_GRAD_OP, NO_SHARD, HYBRID_SHARD
+    use_orig_params: true
+    cpu_offload: false
+    limit_all_gathers: true
+    forward_prefetch: false
+    sync_module_states: false
+
+tensor_parallel:
+  name: tensor_parallel
+  factory: my_project.parallel:build_tensor_strategy
+  tensor_parallel_size: 4
+  pipeline_parallel_size: 1
+  data_parallel_size: auto
+  parameters:
+    sequence_parallel: true
+    async_tensor_parallel: false
+
+pipeline_parallel:
+  name: pipeline_parallel
+  factory: my_project.parallel:build_pipeline_strategy
+  tensor_parallel_size: 1
+  pipeline_parallel_size: 4
+  data_parallel_size: auto
+  parameters:
+    schedule: 1f1b
+    microbatches: 8
+    split_points: [blocks.8, blocks.16, blocks.24]
+    activation_checkpointing: true

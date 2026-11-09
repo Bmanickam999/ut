@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "llm-demo"
+version = "0.1.0"
+description = "A configuration-driven generic PyTorch trainer and 500M housing transformer demo"
+requires-python = ">=3.10"
+dependencies = ["torch>=2.2", "PyYAML>=6.0", "matplotlib>=3.8"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "jupyter>=1", "matplotlib>=3.8", "tensorboard>=2.15"]
+
+[project.scripts]
+train-housing-llm = "generic_trainer.cli:main"
+llmdemo = "llmdemo_cli.main:main"
+
+[tool.setuptools.package-data]
+llmdemo_cli = ["templates/*.yaml"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+markers = [
+  "distributed: launches a real multi-process torch.distributed process group",
+  "gpu: requires at least two CUDA GPUs and the NCCL backend",
+]

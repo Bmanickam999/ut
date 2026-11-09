@@ -1,0 +1,10 @@
+.venv/
+.venv.previous-*/
+.venv.failed-*/
+__pycache__/
+.pytest_cache/
+.cache/
+artifacts/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
